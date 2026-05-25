@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instance Equate | AEC Estimating</title>
+    <style>
+        :root {
+            --bg-color: #0f172a; /* Deep Slate */
+            --panel-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6; /* Blueprint Blue */
+            --accent-green: #10b981; /* Success/Money */
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--accent-blue);
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h2 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        /* Results Panel */
+        .dashboard-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            width: 48%;
+            text-align: center;
+        }
+
+        .stat-box h3 {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-box .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        th {
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        td.cost {
+            text-align: right;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .bim-tag {
+            background-color: var(--bg-color);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--accent-blue);
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Instance Equate</h1>
+        <p>BIM-Integrated $m^3$ Costing Engine & Material Ratio Calculator</p>
+    </header>
+
+    <div class="app-container">
+        <!-- LEFT PANEL: DATA ENTRY -->
+        <div class="panel">
+            <h2>Project Parameters</h2>
+            
+            <div class="form-group">
+                <label for="volume">Total Gross Volume (m³)</label>
+                <input type="number" id="volume" value="5000" min="0" step="100">
+            </div>
+
+            <div class="form-group">
+                <label for="projectType">Project Use Case (Complexity Multiplier)</label>
+                <select id="projectType">
+                    <option value="1.0">Standard Residential (1.0x)</option>
+                    <option value="1.2">Commercial Low-Rise (1.2x)</option>
+                    <option value="1.5">Commercial High-Rise (1.5x)</option>
+                    <option value="1.8">Healthcare / Institutional (1.8x)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="structuralSystem">Primary Structural System</label>
+                <select id="structuralSystem">
+                    <option value="concrete">Cast-in-Place Concrete</option>
+                    <option value="steel">Structural Steel Framing</option>
+                    <option value="timber">Mass Timber (CLT)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="facadeSystem">Facade / Envelope System</label>
+                <select id="facadeSystem">
+                    <option value="curtainWall">Glass Curtain Wall</option>
+                    <option value="precast">Precast Concrete Panels</option>
+                    <option value="brick">Brick Veneer</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: DASHBOARD & OUTPUT -->
+        <div class="panel">
+            <h2>Real-Time Estimation Dashboard</h2>
+            
+            <div class="dashboard-top">
+                <div class="stat-box">
+                    <h3>Estimated Total Cost</h3>
+                    <div class="value" id="totalCost">$0.00</div>
+                </div>
+                <div class="stat-box">
+                    <h3>Blended Ratio (per m³)</h3>
+                    <div class="value" id="costPerM3" style="color: var(--accent-blue);">$0.00</div>
+                </div>
+            </div>
+
+            <h2>Referenced Material Breakdown</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Material / Element</th>
+                        <th>MasterFormat</th>
+                        <th>BIM Association</th>
+                        <th style="text-align: right;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="breakdownTable">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 1. Referenced Data Schema (Mock Database)
+        const materialDB = {
+            structure: {
+                concrete: { name: "High-Early Strength Concrete (40 MPa)", code: "03 30 00", ifc: "IfcSlab, IfcWall", basePriceM3: 450, ratio: 0.35 },
+                steel: { name: "Structural Steel (W-Shapes, Grade 50)", code: "05 12 00", ifc: "IfcBeam, IfcColumn", basePriceM3: 600, ratio: 0.15 },
+                timber: { name: "Cross Laminated Timber (CLT)", code: "06 17 00", ifc: "IfcSlab, IfcWall", basePriceM3: 850, ratio: 0.40 }
+            },
+            facade: {
+                curtainWall: { name: "Unitized Glazed Curtain Wall", code: "08 44 00", ifc: "IfcCurtainWall", basePriceM3: 350, ratio: 0.20 },
+                precast: { name: "Architectural Precast Panels", code: "03 45 00", ifc: "IfcWallStandardCase", basePriceM3: 200, ratio: 0.25 },
+                brick: { name: "Clay Brick Veneer Assembly", code: "04 21 00", ifc: "IfcCovering", basePriceM3: 150, ratio: 0.10 }
+            },
+            fixed: {
+                mep: { name: "MEP Systems (Blended Allowance)", code: "Div 21-28", ifc: "IfcDistributionSystem", basePriceM3: 300, ratio: 1.0 },
+                finishes: { name: "Interior Finishes (Standard)", code: "Div 09", ifc: "IfcSpace", basePriceM3: 180, ratio: 1.0 }
+            }
+        };
+
+        // 2. Costing Engine Logic
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        }
+
+        function calculateEstimate() {
+            // Get user inputs
+            const volume = parseFloat(document.getElementById('volume').value) || 0;
+            const multiplier = parseFloat(document.getElementById('projectType').value);
+            const structKey = document.getElementById('structuralSystem').value;
+            const facadeKey = document.getElementById('facadeSystem').value;
+
+            // Retrieve data from DB
+            const structData = materialDB.structure[structKey];
+            const facadeData = materialDB.facade[facadeKey];
+            const mepData = materialDB.fixed.mep;
+            const finishData = materialDB.fixed.finishes;
+
+            // Array of selected assemblies
+            const assemblies = [structData, facadeData, mepData, finishData];
+            let totalCost = 0;
+            const tbody = document.getElementById('breakdownTable');
+            tbody.innerHTML = '';
+
+            // Calculate ratios and build table
+            assemblies.forEach(item => {
+                // Calculation: (Volume * volumetric ratio factor) * base price * project complexity multiplier
+                const itemCost = (volume * item.ratio) * item.basePriceM3 * multiplier;
+                totalCost += itemCost;
+
+                // Render row
+                const row = `<tr>
+                    <td>${item.name}</td>
+                    <td>${item.code}</td>
+                    <td><span class="bim-tag">${item.ifc}</span></td>
+                    <td class="cost">${formatCurrency(itemCost)}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+
+            // Update Dashboard UI
+            document.getElementById('totalCost').innerText = formatCurrency(totalCost);
+            
+            // Avoid division by zero
+            const costPerM3 = volume > 0 ? (totalCost / volume) : 0;
+            document.getElementById('costPerM3').innerText = formatCurrency(costPerM3);
+        }
+
+        // 3. Event Listeners for interactive data fields
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('input', calculateEstimate);
+            element.addEventListener('change', calculateEstimate);
+        });
+
+        // Initial Calculation on load
+        calculateEstimate();
+    </script>
+</body>
+</html>
